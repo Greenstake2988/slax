@@ -3,6 +3,8 @@ defmodule SlaxWeb.ChatRoomLive do
 
   def render(assigns) do
     ~H"""
+    <%!-- Comments --%>
+    <div><% IO.puts(11) %></div>
     <div>Welcome to the chat!</div>
     """
   end
