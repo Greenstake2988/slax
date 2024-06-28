@@ -1,5 +1,4 @@
 defmodule SlaxWeb.Router do
-  alias SlaxWeb.ChatRoomLive
   use SlaxWeb, :router
 
   pipeline :browser do
