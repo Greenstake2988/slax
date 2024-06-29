@@ -4,6 +4,16 @@ defmodule Slax.Chat do
 
   import Ecto.Query
 
+  def change_message(message, attrs \\ %{}) do
+    Message.changeset(message, attrs)
+  end
+
+  def create_message(room, attrs, user) do
+    %Message{room: room, user: user}
+    |> Message.changeset(attrs)
+    |> Repo.insert()
+  end
+
   def change_room(room, attrs \\ %{}) do
     Room.changeset(room, attrs)
   end
