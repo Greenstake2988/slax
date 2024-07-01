@@ -5,6 +5,7 @@ defmodule SlaxWeb.ChatRoomLive do
   alias Slax.Chat.Room
   alias Slax.Chat.Message
   alias Slax.Accounts.User
+  alias Slax.Accounts
 
   def render(assigns) do
     ~H"""
@@ -27,6 +28,16 @@ defmodule SlaxWeb.ChatRoomLive do
             dom_id={dom_id}
             active={room.id == @room.id}
           />
+        </div>
+        <div class="mt-4">
+          <div class="flex items-center h-8 px-3 group">
+            <div class="flex items-center flex-grow focus:outline-none">
+              <span class="ml-2 leading-none font-medium text-sm">Users</span>
+            </div>
+          </div>
+          <div id="users-list">
+            <.user :for={user <- @users} user={user} />
+          </div>
         </div>
       </div>
     </div>
@@ -173,6 +184,24 @@ defmodule SlaxWeb.ChatRoomLive do
     |> Timex.format!("%-l:%M %p", :strftime)
   end
 
+  attr :user, User, required: true
+  attr :online, :boolean, default: false
+
+  defp user(assigns) do
+    ~H"""
+    <.link class="flex items-center h-8 hover:bg-gray-300 text-sm pl-8 pr-3" href="#">
+      <div class="flex justify-center w-4">
+        <%= if @online do %>
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+        <% else %>
+          <span class="w-2 h-2 rounded-full border-2 border-gray-500"></span>
+        <% end %>
+      </div>
+      <span class="ml-2 leading-none"><%= username(@user) %></span>
+    </.link>
+    """
+  end
+
   defp username(user) do
     user.email |> String.split("@") |> List.first() |> String.capitalize()
   end
@@ -275,12 +304,14 @@ defmodule SlaxWeb.ChatRoomLive do
 
   def mount(_params, _session, socket) do
     rooms = Chat.list_rooms()
+    users = Accounts.list_users()
 
     timezone = get_connect_params(socket)["timezone"]
 
     {:ok,
      socket
-     |> assign(timezone: timezone)
+     |> assign(timezone: timezone, users: users)
+     |> stream(:users, users, reset: true)
      |> stream(:rooms, rooms, reset: true)}
   end
 end
