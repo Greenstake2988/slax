@@ -6,6 +6,7 @@ defmodule SlaxWeb.ChatRoomLive do
   alias Slax.Chat.Message
   alias Slax.Accounts.User
   alias Slax.Accounts
+  alias SlaxWeb.OnlineUsers
 
   def render(assigns) do
     ~H"""
@@ -36,7 +37,11 @@ defmodule SlaxWeb.ChatRoomLive do
             </div>
           </div>
           <div id="users-list">
-            <.user :for={user <- @users} user={user} />
+            <.user
+              :for={user <- @users}
+              user={user}
+              online={OnlineUsers.online?(@online_users, user.id)}
+            />
           </div>
         </div>
       </div>
@@ -308,10 +313,14 @@ defmodule SlaxWeb.ChatRoomLive do
 
     timezone = get_connect_params(socket)["timezone"]
 
+    if connected?(socket) do
+      OnlineUsers.track(self(), socket.assigns.current_user)
+    end
+
     {:ok,
      socket
      |> assign(timezone: timezone, users: users)
-     |> stream(:users, users, reset: true)
+     |> assign(online_users: OnlineUsers.list())
      |> stream(:rooms, rooms, reset: true)}
   end
 end
