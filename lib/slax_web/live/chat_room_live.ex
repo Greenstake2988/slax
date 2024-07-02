@@ -307,6 +307,12 @@ defmodule SlaxWeb.ChatRoomLive do
     {:noreply, stream_delete(socket, :messages, message)}
   end
 
+  def handle_info(%{event: "presence_diff", payload: diff}, socket) do
+    online_users = OnlineUsers.update(socket.assigns.online_users, diff)
+
+    {:noreply, assign(socket, online_users: online_users)}
+  end
+
   def mount(_params, _session, socket) do
     rooms = Chat.list_rooms()
     users = Accounts.list_users()
@@ -316,6 +322,8 @@ defmodule SlaxWeb.ChatRoomLive do
     if connected?(socket) do
       OnlineUsers.track(self(), socket.assigns.current_user)
     end
+
+    OnlineUsers.subscribe()
 
     {:ok,
      socket
