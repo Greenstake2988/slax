@@ -22,13 +22,8 @@ defmodule SlaxWeb.ChatRoomLive do
         <div class="flex items-center h-8 px-3 group">
           <span class="ml-2 leading-none font-medium text-sm">Rooms</span>
         </div>
-        <div id="rooms-list" phx-update="stream">
-          <.room_link
-            :for={{dom_id, room} <- @streams.rooms}
-            room={room}
-            dom_id={dom_id}
-            active={room.id == @room.id}
-          />
+        <div id="rooms-list">
+          <.room_link :for={room <- @rooms} room={room} active={room.id == @room.id} />
           <button class="group relative flex items-center h-8 text-sm pl-8 pr-3 hover:bg-slate-300 cursor-pointer w-full">
             <.icon name="hero-plus" class="h-4 w-4 realitve top-px" />
             <span class="ml-2 leading-none">Add rooms</span>
@@ -229,12 +224,11 @@ defmodule SlaxWeb.ChatRoomLive do
 
   attr :active, :boolean, required: true
   attr :room, Room, required: true
-  attr :dom_id, :string, required: true
+  # attr :dom_id, :string, required: true
 
   defp room_link(assigns) do
     ~H"""
     <.link
-      id={@dom_id}
       class={[
         "flex items-center h-8 text-sm pl-8 pr-3",
         (@active && "bg-slate-300") || "hover:bg-slate-300"
@@ -345,6 +339,6 @@ defmodule SlaxWeb.ChatRoomLive do
      socket
      |> assign(timezone: timezone, users: users)
      |> assign(online_users: OnlineUsers.list())
-     |> stream(:rooms, rooms, reset: true)}
+     |> assign(rooms: rooms)}
   end
 end
