@@ -18,8 +18,8 @@ defmodule SlaxWeb.ChatRoomLive.Edit do
         </:actions>
       </.header>
       <.simple_form for={@form} id="room-form" phx-change="validate-room" phx-submit="save-room">
-        <.input field={@form[:name]} type="text" label="Name" phx-debounce/>
-        <.input field={@form[:topic]} type="text" label="Topic" phx-debounce/>
+        <.input field={@form[:name]} type="text" label="Name" phx-debounce />
+        <.input field={@form[:topic]} type="text" label="Topic" phx-debounce />
         <:actions>
           <.button phx-disable-with="Saving..." class="w-full">Save</.button>
         </:actions>
@@ -31,12 +31,18 @@ defmodule SlaxWeb.ChatRoomLive.Edit do
   def mount(%{"id" => id}, _session, socket) do
     room = Chat.get_room!(id)
 
-    changeset = Chat.change_room(room)
-
     socket =
-      socket
-      |> assign(page_title: "Edit chat room", room: room)
-      |> assign_form(changeset)
+      if Chat.joined?(room, socket.assigns.current_user) do
+        changeset = Chat.change_room(room)
+
+        socket
+        |> assign(page_title: "Edit chat room", room: room)
+        |> assign_form(changeset)
+      else
+        socket
+        |> put_flash(:error, "Permission denied")
+        |> push_navigate(to: ~p"/")
+      end
 
     {:ok, socket}
   end
